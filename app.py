@@ -5,18 +5,18 @@ from math import pow
 import pygame
 
 # 页面内部padding=50
-SCREEN_PADDING = 50
+SCREEN_PADDING = 40
 # 宽 = 高 = 15
 SIZE = 15
 # 水平方向单位距离
-HORIZONTAL_GAP = 100
+HORIZONTAL_GAP = 80
 # 垂直方向单位距离
-VERTICAL_GAP = 50
+VERTICAL_GAP = 40
 # 棋子半径
 PIECE_RADIUS = 10
 # 界面宽高
 WIDTH = SCREEN_PADDING * 2 + (SIZE - 1) * HORIZONTAL_GAP
-HEIGHT = SCREEN_PADDING * 2 + (SIZE - 1) * VERTICAL_GAP
+HEIGHT = SCREEN_PADDING * 2 + (SIZE - 1) * VERTICAL_GAP + 30
 # 初始化屏幕
 pygame.init()
 # 文字字体
@@ -26,6 +26,8 @@ IMG_DICT = {}
 
 COLOR_WHITE = (255, 255, 255)
 COLOR_BLACK = (0, 0, 0)
+COLOR_BLUE = (22, 160, 133)
+COLOR_YELLOW = (243, 156, 18)
 
 
 # 计算位置
@@ -168,6 +170,14 @@ def draw_triangle(screen, pos1, pos2, pos3, fill):
 def draw_game_board(screen, board_config):
     # 白色填充背景色
     screen.fill(COLOR_WHITE)
+    # 底部文字
+    text_surface = FONT.render('蓝方执子', True, COLOR_BLUE)
+    screen.blit(text_surface, (10, HEIGHT - 90))
+    text_surface = FONT.render('蓝方得分: 0', True, COLOR_BLUE)
+    screen.blit(text_surface, (10, HEIGHT - 60))
+    text_surface = FONT.render('黄方得分: 0', True, COLOR_YELLOW)
+    screen.blit(text_surface, (10, HEIGHT - 30))
+
     # 画棋盘
     # 两侧填充色
     fill_list = board_config['fill']
