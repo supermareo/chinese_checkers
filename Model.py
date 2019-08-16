@@ -139,12 +139,13 @@ class ChessBoard:
     def reachable_direction(from_pos, to_pos):
         row1, col1 = from_pos
         row2, col2 = to_pos
-        # 上下左右
-        if col1 == col2 or row1 == row2:
-            return False
-        # 右上|右下|左下|左上
+        # 上下可以移动
+        if col1 == col2:
+            return True
+        # 右上|右下|左下|左上 可以移动
         if pow(row1 - row2, 2) == pow(col1 - col2, 2):
             return True
+        # 其它情况不能移动
         return False
 
     # 获取可选的棋子
