@@ -1,7 +1,12 @@
 # coding=utf-8
-import pygame
 import os
+import re
+
+import easygui
+import pygame
+
 from Model import *
+from calculator import calc
 
 # 页面内部padding=40
 SCREEN_PADDING = 40
@@ -29,6 +34,16 @@ pygame.init()
 FONT = pygame.font.Font("ext/fonts/msyh.ttf", 16)
 # 存放图片名称与pygame img映射，image需要等pygame.display设置之后才能载入，所以这里只定义一个空dict
 IMG_DICT = {}
+
+# 弹框内容
+DIALOG_TITLE = "运算方法"
+DIALOG_MSG = "请输入一个合法的四则运算表达式，规则如下:\n" \
+             "1.列表_REPLACE_中数字必须全部参与运算，且只能参与一次运算；\n" \
+             "2.表达式可以使用 加 +、减 -、乘 *、除 / 和 括号 ();\n" \
+             "3.运算结果必须等于0."
+
+# 简单校验表达式，只能输入 数字、四则运算符、括号和空格
+EXPRESSION_PATTERN = re.compile('[0-9()+\\-\\*/ ]+')
 
 screen = None
 CHESSBOARD = None
@@ -73,15 +88,69 @@ def touched(chessman_row_col, clicked_position):
     return pow(cx - x, 2) + pow(cy - y, 2) <= pow(CHESSMAN_RADIUS + 5, 2)
 
 
+# valid_nums 可以使用的数字列表
+# expression 用户输入的表达式
+def check_expression(valid_nums, expression):
+    # 不满足表达式格式
+    if not EXPRESSION_PATTERN.fullmatch(expression):
+        return False
+    # 去掉操作符号与括号，只留数字
+    new_expression = expression.replace('+', ' ').replace('-', ' ') \
+        .replace('*', ' ').replace('/', ' ').replace('(', ' ').replace(')', ' ')
+    # 去除空格，只保留数字
+    new_num_list = list(map(lambda x: int(x), filter(lambda x: x != '', new_expression.split(' '))))
+    new_num_list.sort()
+    valid_nums.sort()
+    return valid_nums.__eq__(new_num_list)
+
+
+def show_calc_dialog(dest_val, components, error_msg=None):
+    if dest_val is not None:
+        components.append(dest_val)
+    # 用户输入的表达式
+    message = DIALOG_MSG.replace('_REPLACE_', str(components))
+    if error_msg:
+        message += '\n' + error_msg
+    expression = easygui.enterbox(message, DIALOG_TITLE)
+    # 用户没输入，点了取消
+    if expression is None:
+        CHESSBOARD.CURRENT_SELECTED_CHESSMAN = None
+    # 用户输入了，进行计算
+    else:
+        expression_valid = check_expression(components, expression)
+        if not expression_valid:
+            show_calc_dialog(None, components, '表达式有误，请重新输入')
+        else:
+            result = calc(expression)
+            # 输入的表达式格式
+            if result is None:
+                show_calc_dialog(None, components, '表达式有误，请重新输入')
+            # 输入的表达式计算出来的结果不为0
+            elif result != 0:
+                show_calc_dialog(None, components, '结果不正确，请重新输入')
+            # 正确，跳特么的
+            else:
+                CHESSBOARD.jump()
+
+
 # 处理点击事件
 # clicked_position - 点击的位置(x,y)
 def process_click(clicked_position):
+    click_result = None
     # 遍历棋子
     for chessman in CHESSBOARD.get_selectable_chessman_list():
-        print(chessman)
         if touched(chessman.get_row_col(), clicked_position):
-            CHESSBOARD.click_chessman(chessman)
-            break
+            click_result = CHESSBOARD.click_chessman(chessman)
+    if click_result is not None:
+        from_chessman = click_result[0]
+        to_chessman = click_result[1]
+        # 四则运算哟啊求出的值
+        dest_val = from_chessman.val
+        # 参与计算的项
+        components = click_result[2]
+        print(from_chessman, to_chessman, components)
+        result = show_calc_dialog(dest_val, components)
+        pass
 
 
 # 绘制老家，是一个填充颜色的三角形
@@ -161,6 +230,23 @@ def draw_game_board():
     draw_chessman_list(CHESSBOARD.get_chessman_list(CHESSBOARD.PLAYER_BLUE))
     # 绘制红方棋子
     draw_chessman_list(CHESSBOARD.get_chessman_list(CHESSBOARD.PLAYER_RED))
+    # 绘制界面提示文字
+    draw_hints()
+
+
+# 绘制界面提示文字
+def draw_hints():
+    # 执子提示
+    player = '蓝方执子' if CHESSBOARD.CUR_PLAYER == CHESSBOARD.PLAYER_BLUE else '黄方执子'
+    color = COLOR_BLUE if CHESSBOARD.CUR_PLAYER == CHESSBOARD.PLAYER_BLUE else COLOR_YELLOW
+    text_surface = FONT.render(player, True, color)
+    # 分数提示
+    scores = CHESSBOARD.scores()
+    screen.blit(text_surface, (10, HEIGHT - 90))
+    text_surface = FONT.render(f'蓝方得分: {scores[CHESSBOARD.PLAYER_BLUE]}', True, COLOR_BLUE)
+    screen.blit(text_surface, (10, HEIGHT - 60))
+    text_surface = FONT.render(f'黄方得分: {scores[CHESSBOARD.PLAYER_RED]}', True, COLOR_YELLOW)
+    screen.blit(text_surface, (10, HEIGHT - 30))
 
 
 if __name__ == '__main__':

@@ -134,6 +134,13 @@ class ChessBoard:
     def get_chessman_list(self, role=None):
         return list(filter(lambda x: x if role is None else x.role == role, self.chessman_list))
 
+    # 获取指定行列的棋子
+    def get_chessman(self, row_col):
+        chessman_list = list(filter(lambda x: x.get_row_col() == row_col, self.chessman_list))
+        if len(chessman_list) == 1:
+            return chessman_list[0]
+        return None
+
     # 可到达的方向
     @staticmethod
     def reachable_direction(from_pos, to_pos):
@@ -155,41 +162,131 @@ class ChessBoard:
             return self.get_chessman_list(self.CUR_PLAYER)
         # 第二个，则必须选择空白的位置
         empty_chessman_list = self.get_chessman_list(self.EMPTY)
-        # 而且，必须在选中的棋子的 上|右上|右|右下|下|左下|左|左上 方向之一
-        return list(
+        # 而且，必须在选中的棋子的 上|右上|右下|下|左下|左上 方向之一
+        selectable_chessman_list = list(
             filter(lambda x: self.reachable_direction(self.SELECTED_CHESSMAN.get_row_col(), x.get_row_col()),
                    empty_chessman_list))
+        selectable_chessman_list.append(self.SELECTED_CHESSMAN)
+        return selectable_chessman_list
+
+    # 获取中途经过的所有棋子
+    def get_center_chessman_list(self, from_pos, to_pos):
+        center_chessman_list = []
+        x_step = -1 if from_pos[0] > to_pos[0] else 1 if from_pos[0] < to_pos[0] else 0
+        y_step = -1 if from_pos[1] > to_pos[1] else 1 if from_pos[1] < to_pos[1] else 0
+        sx, sy = from_pos
+        ex, ey = to_pos
+        while sx != ex:
+            sx = sx + x_step
+            sy = sy + y_step
+            the_chessman = self.get_chessman((sx, sy))
+            if the_chessman is None:
+                continue
+            if the_chessman.role is self.EMPTY:
+                continue
+            center_chessman_list.append(the_chessman)
+        return center_chessman_list
+
+    # 可以一次跨越多个棋子
+    def can_jump_multi_chessman(self, from_chessman, to_chessman):
+        from_pos = from_chessman.get_row_col()
+        to_pos = to_chessman.get_row_col()
+        center_chessman_list = self.get_center_chessman_list(from_pos, to_pos)
+        # 如果中间没有棋子，直接返回空列表，无法跳
+        if len(center_chessman_list) == 0:
+            return []
+        # 如果中间有棋子，判断最后一个棋子和选择位置是否只差1
+        x_step = -1 if from_pos[0] > to_pos[0] else 1 if from_pos[0] < to_pos[0] else 0
+        y_step = -1 if from_pos[1] > to_pos[1] else 1 if from_pos[1] < to_pos[1] else 0
+        last_chessman = center_chessman_list[-1]
+        last_pos = last_chessman.get_row_col()
+        if last_pos[0] + x_step == to_pos[0] and last_pos[1] + y_step == to_pos[1]:
+            return center_chessman_list
+        return []
+
+    # 棋子跳动
+    def jump(self):
+        # 判断这个位置是否能直接跳过来，如果能，将SELECTED_CHESSMAN跳到该位置
+        # # 值
+        # self.val = val
+        # # 所属角色-属于哪个玩家-红-1/蓝1/轮空0
+        # self.role = role
+        # # 根据所属玩家和值，计算出显示的图片
+        # self.image = f'{"b" if role == self.PLAYER_BLUE else "y"}{val}'
+        new_chessman_list = []
+        for chessman in self.get_chessman_list():
+            row, col = chessman.get_row_col()
+            if (row, col) == self.SELECTED_CHESSMAN.get_row_col():
+                new_chessman_list.append(Chessman(row, col, -1, self.EMPTY))
+            elif (row, col) == self.CURRENT_SELECTED_CHESSMAN.get_row_col():
+                new_chessman_list.append(
+                    Chessman(row, col, self.SELECTED_CHESSMAN.val, self.CUR_PLAYER))
+            else:
+                new_chessman_list.append(chessman)
+        self.chessman_list.clear()
+        for chessman in new_chessman_list:
+            self.chessman_list.append(chessman)
+
+        # 清空选中
+        self.SELECTED_CHESSMAN = None
+        self.CURRENT_SELECTED_CHESSMAN = None
+        # 切换玩家
+        self.CUR_PLAYER = self.PLAYER_RED if self.CUR_PLAYER == self.PLAYER_BLUE else self.PLAYER_BLUE
 
     # 点击了棋子
     def click_chessman(self, chessman):
         # 首次选中，则给SELECTED_CHESSMAN赋值
         if self.SELECTED_CHESSMAN is None:
             self.SELECTED_CHESSMAN = chessman
+        # 再次点击已选中的棋子，取消选中
+        elif self.SELECTED_CHESSMAN == chessman:
+            self.SELECTED_CHESSMAN = None
         else:
             self.CURRENT_SELECTED_CHESSMAN = chessman
-            # 判断这个位置是否能直接跳过来，如果能，将SELECTED_CHESSMAN跳到该位置
-            # # 值
-            # self.val = val
-            # # 所属角色-属于哪个玩家-红-1/蓝1/轮空0
-            # self.role = role
-            # # 根据所属玩家和值，计算出显示的图片
-            # self.image = f'{"b" if role == self.PLAYER_BLUE else "y"}{val}'
-            new_chessman_list = []
-            for chessman in self.get_chessman_list():
-                row, col = chessman.get_row_col()
-                if (row, col) == self.SELECTED_CHESSMAN.get_row_col():
-                    new_chessman_list.append(Chessman(row, col, -1, self.EMPTY))
-                elif (row, col) == self.CURRENT_SELECTED_CHESSMAN.get_row_col():
-                    new_chessman_list.append(
-                        Chessman(row, col, self.SELECTED_CHESSMAN.val, self.CUR_PLAYER))
+            # 比较CURRENT_SELECTED_CHESSMAN与SELECTED_CHESSMAN的位置
+            cr, cl = self.CURRENT_SELECTED_CHESSMAN.get_row_col()
+            sr, sl = self.SELECTED_CHESSMAN.get_row_col()
+            # (1) CURRENT_SELECTED_CHESSMAN在SELECTED_CHESSMAN的紧邻的周围-即 上|右上|右下|下|左下|左上 相隔一个位置
+            # 右上 右下 左上 左下 or 上下
+            if sl - cl == 1 or sl - cl == -1 or (sl == cl and (sr - cr == 2 or sr - cr == -2)):
+                self.jump()
+            # (2) 跳过相邻一枚棋子
+            # 首先，选择的位置在选中棋子的 右上 右下 左上 左下 or 上下 六个方向，且中间隔着一个位置
+            elif sl - cl == 2 or sl - cl == -2 or (sl == cl and (sr - cr == 4 or sr - cr == -4)):
+                # 找到中间的棋子
+                center_chessman = self.get_chessman((int((sr + cr) / 2), int((sl + cl) / 2)))
+                # 如果中间棋子不为空，且棋子属于玩家而不是空白位置
+                if center_chessman is not None and center_chessman.role is not self.EMPTY:
+                    self.jump()
+            # (3) 四则运算棋子 - 相隔多个棋子，其在最后一个棋子旁边
+            else:
+                can_jump_chessman_list = self.can_jump_multi_chessman(self.SELECTED_CHESSMAN,
+                                                                      self.CURRENT_SELECTED_CHESSMAN)
+                # 如果长度为0，无法
+                if len(can_jump_chessman_list) == 0:
+                    print('cannot jump')
                 else:
-                    new_chessman_list.append(chessman)
-            self.chessman_list.clear()
-            for chessman in new_chessman_list:
-                self.chessman_list.append(chessman)
+                    # 弹出4则运算
+                    return self.SELECTED_CHESSMAN, self.CURRENT_SELECTED_CHESSMAN, [chessman.val for chessman in
+                                                                                    can_jump_chessman_list]
 
-            # 清空选中
-            self.SELECTED_CHESSMAN = None
-            self.CURRENT_SELECTED_CHESSMAN = None
-            # 切换玩家
-            self.CUR_PLAYER = self.PLAYER_RED if self.CUR_PLAYER == self.PLAYER_BLUE else self.PLAYER_BLUE
+    # 计算得分
+    def scores(self):
+        score_result = {
+            self.PLAYER_BLUE: 0,
+            self.PLAYER_RED: 0
+        }
+        chessman_list_blue = self.get_chessman_list(self.PLAYER_BLUE)
+        for chessman in chessman_list_blue:
+            row_col = chessman.get_row_col()
+            if row_col in self.pos_val_dict and row_col[1] >= 11:
+                val = chessman.val * self.pos_val_dict[row_col]
+                score_result[self.PLAYER_BLUE] = score_result[self.PLAYER_BLUE] + val
+
+        chessman_list_yellow = self.get_chessman_list(self.PLAYER_RED)
+        for chessman in chessman_list_yellow:
+            row_col = chessman.get_row_col()
+            if row_col in self.pos_val_dict and row_col[1] <= 3:
+                val = chessman.val * self.pos_val_dict[row_col]
+                score_result[self.PLAYER_RED] = score_result[self.PLAYER_RED] + val
+        return score_result
