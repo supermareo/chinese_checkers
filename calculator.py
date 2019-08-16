@@ -67,13 +67,15 @@ def pre_process_infix_expression(infix_expression_str):
 
 # 中缀表达式字符串-即我们常规四则运算
 def calc(infix_expression_str):
-    # 预处理
-    infix_expression_str = pre_process_infix_expression(infix_expression_str)
-    if infix_expression_str is None:
+    try:
+        # 预处理
+        infix_expression_str = pre_process_infix_expression(infix_expression_str)
+        if infix_expression_str is None:
+            return None
+        suffix_expression_str = infix_to_postfix(infix_expression_str)
+        return calc_suffix_expression(suffix_expression_str)
+    except:
         return None
-    suffix_expression_str = infix_to_postfix(infix_expression_str)
-    return calc_suffix_expression(suffix_expression_str)
-
 # if __name__ == '__main__':
 #     # print(infix_to_postfix('8 - 7 - 1'))
 #     print(calc('8-4*(7-1)/2'))

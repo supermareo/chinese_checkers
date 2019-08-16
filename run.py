@@ -48,6 +48,8 @@ EXPRESSION_PATTERN = re.compile('[0-9()+\\-\\*/ ]+')
 screen = None
 CHESSBOARD = None
 
+DIALOG_FLAG = False
+
 
 # 加载用到的图片资源
 def load_imgs():
@@ -105,10 +107,14 @@ def check_expression(valid_nums, expression):
 
 
 def show_calc_dialog(dest_val, components, error_msg=None):
+    global DIALOG_FLAG
+
+    DIALOG_FLAG = True
     if dest_val is not None:
         components.append(dest_val)
     # 用户输入的表达式
     message = DIALOG_MSG.replace('_REPLACE_', str(components))
+    DIALOG_FLAG = False
     if error_msg:
         message += '\n' + error_msg
     expression = easygui.enterbox(message, DIALOG_TITLE)
@@ -149,8 +155,7 @@ def process_click(clicked_position):
         # 参与计算的项
         components = click_result[2]
         print(from_chessman, to_chessman, components)
-        result = show_calc_dialog(dest_val, components)
-        pass
+        show_calc_dialog(dest_val, components)
 
 
 # 绘制老家，是一个填充颜色的三角形
@@ -279,7 +284,7 @@ if __name__ == '__main__':
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 process_click(pygame.mouse.get_pos())
 
-        draw_game_board()
-
-        # 刷新屏幕
-        pygame.display.flip()
+        if not DIALOG_FLAG:
+            draw_game_board()
+            # 刷新屏幕
+            pygame.display.flip()
