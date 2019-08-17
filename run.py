@@ -21,6 +21,9 @@ CHESSMAN_RADIUS = 10
 # 界面宽高，高度预留30用于文字绘制
 WIDTH = SCREEN_PADDING * 2 + (SIZE - 1) * HORIZONTAL_GAP
 HEIGHT = SCREEN_PADDING * 2 + (SIZE - 1) * VERTICAL_GAP + 30
+
+print(WIDTH, HEIGHT)
+
 # 线条宽度，默认2
 LINE_WIDTH = 2
 # 用到的一些颜色
@@ -38,9 +41,9 @@ IMG_DICT = {}
 # 弹框内容
 DIALOG_TITLE = "运算方法"
 DIALOG_MSG = "请输入一个合法的四则运算表达式，规则如下:\n" \
-             "1.列表_REPLACE_中数字必须全部参与运算，且只能参与一次运算；\n" \
+             "1.列表_REPLACE_0_中数字必须全部参与运算，且只能参与一次运算；\n" \
              "2.表达式可以使用 加 +、减 -、乘 *、除 / 和 括号 ();\n" \
-             "3.运算结果必须等于0."
+             "3.运算结果必须等于_REPLACE_1_."
 
 # 简单校验表达式，只能输入 数字、四则运算符、括号和空格
 EXPRESSION_PATTERN = re.compile('[0-9()+\\-\\*/ ]+')
@@ -108,12 +111,9 @@ def check_expression(valid_nums, expression):
 
 def show_calc_dialog(dest_val, components, error_msg=None):
     global DIALOG_FLAG
-
     DIALOG_FLAG = True
-    if dest_val is not None:
-        components.append(dest_val)
     # 用户输入的表达式
-    message = DIALOG_MSG.replace('_REPLACE_', str(components))
+    message = DIALOG_MSG.replace('_REPLACE_0_', str(components)).replace('_REPLACE_1_', str(dest_val))
     DIALOG_FLAG = False
     if error_msg:
         message += '\n' + error_msg
@@ -125,15 +125,15 @@ def show_calc_dialog(dest_val, components, error_msg=None):
     else:
         expression_valid = check_expression(components, expression)
         if not expression_valid:
-            show_calc_dialog(None, components, '表达式有误，请重新输入')
+            show_calc_dialog(dest_val, components, '表达式有误，请重新输入')
         else:
             result = calc(expression)
             # 输入的表达式格式
             if result is None:
-                show_calc_dialog(None, components, '表达式有误，请重新输入')
+                show_calc_dialog(dest_val, components, '表达式有误，请重新输入')
             # 输入的表达式计算出来的结果不为0
-            elif result != 0:
-                show_calc_dialog(None, components, '结果不正确，请重新输入')
+            elif result != dest_val:
+                show_calc_dialog(dest_val, components, '结果不正确，请重新输入')
             # 正确，跳特么的
             else:
                 CHESSBOARD.jump()
