@@ -83,21 +83,21 @@ def draw_page():
 ########################################################################################################################
 # 加载欢迎页UI
 def load_page_welcome_widgets():
-    background = load_image('ext/welcome/start_background_0.png', WINDOW)
+    background = load_image('ext/images/start_background_0.png', WINDOW)
     buttons = []
 
-    button_start = Button((int((WINDOW[0] - DEFAULT_BUTTON_SIZE[0]) / 2), 250), 'ext/welcome/start_white.png',
+    button_start = Button((int((WINDOW[0] - DEFAULT_BUTTON_SIZE[0]) / 2), 250), 'ext/images/start_white.png',
                           size=DEFAULT_BUTTON_SIZE,
-                          image_hover='ext/welcome/start_red.png',
+                          image_hover='ext/images/start_red.png',
                           on_click=start_click)
     buttons.append(button_start)
-    button_end = Button((int((WINDOW[0] - DEFAULT_BUTTON_SIZE[0]) / 2), 360), 'ext/welcome/end_white.png',
+    button_end = Button((int((WINDOW[0] - DEFAULT_BUTTON_SIZE[0]) / 2), 360), 'ext/images/end_white.png',
                         size=DEFAULT_BUTTON_SIZE,
-                        image_hover='ext/welcome/end_red.png', on_click=end_click)
+                        image_hover='ext/images/end_red.png', on_click=end_click)
     buttons.append(button_end)
-    button_author = Button((int((WINDOW[0] - DEFAULT_BUTTON_SIZE[0]) / 2), 470), 'ext/welcome/author_white.png',
+    button_author = Button((int((WINDOW[0] - DEFAULT_BUTTON_SIZE[0]) / 2), 470), 'ext/images/author_white.png',
                            size=DEFAULT_BUTTON_SIZE,
-                           image_hover='ext/welcome/author_red.png', on_click=about_click)
+                           image_hover='ext/images/author_red.png', on_click=about_click)
     buttons.append(button_author)
 
     PAGES_DATA[CUR_PAGE]['widgets'] = {
@@ -145,21 +145,21 @@ def draw_page_welcome():
 # 模式选择页
 # 加载模式选择页UI
 def load_page_mode_widgets():
-    background = load_image('ext/welcome/start_background_0.png', WINDOW)
+    background = load_image('ext/images/start_background_0.png', WINDOW)
     buttons = []
 
-    button_start = Button((int((WINDOW[0] - DEFAULT_BUTTON_SIZE[0]) / 2), 250), 'ext/welcome/standalone_white.png',
+    button_start = Button((int((WINDOW[0] - DEFAULT_BUTTON_SIZE[0]) / 2), 250), 'ext/images/standalone_white.png',
                           size=DEFAULT_BUTTON_SIZE,
-                          image_hover='ext/welcome/standalone_red.png',
+                          image_hover='ext/images/standalone_red.png',
                           on_click=standalone_click)
     buttons.append(button_start)
-    button_end = Button((int((WINDOW[0] - DEFAULT_BUTTON_SIZE[0]) / 2), 360), 'ext/welcome/Internet_white.png',
+    button_end = Button((int((WINDOW[0] - DEFAULT_BUTTON_SIZE[0]) / 2), 360), 'ext/images/Internet_white.png',
                         size=DEFAULT_BUTTON_SIZE,
-                        image_hover='ext/welcome/Internet_red.png', on_click=internet_click)
+                        image_hover='ext/images/Internet_red.png', on_click=internet_click)
     buttons.append(button_end)
-    button_author = Button((int((WINDOW[0] - DEFAULT_BUTTON_SIZE[0]) / 2), 470), 'ext/welcome/ai_white.png',
+    button_author = Button((int((WINDOW[0] - DEFAULT_BUTTON_SIZE[0]) / 2), 470), 'ext/images/ai_white.png',
                            size=DEFAULT_BUTTON_SIZE,
-                           image_hover='ext/welcome/ai_red.png', on_click=ai_click)
+                           image_hover='ext/images/ai_red.png', on_click=ai_click)
     buttons.append(button_author)
 
     PAGES_DATA[CUR_PAGE]['widgets'] = {

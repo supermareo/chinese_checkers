@@ -56,12 +56,12 @@ DIALOG_FLAG = False
 
 # 加载用到的图片资源
 def load_imgs():
-    image_files = os.listdir('ext/imgs')
+    image_files = os.listdir('ext/images/chessman')
     for image_file in image_files:
-        image = pygame.image.load("ext/imgs/" + image_file).convert_alpha()
+        image = pygame.image.load("ext/images/chessman/" + image_file).convert_alpha()
         # 缩放到20*20大小
         pygame.transform.scale(image, (20, 20))
-        IMG_DICT[image_file.split('.')[0]] = image
+        IMG_DICT[image_file.split("/")[-1].split('.')[0]] = image
 
 
 # 计算行列点在界面上的实际绘制位置
