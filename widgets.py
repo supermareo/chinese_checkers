@@ -13,7 +13,8 @@ class Button:
     # 按钮当前状态
     CUR_STATE = STATE_NORMAL
 
-    def __init__(self, position, image_normal, size=(188, 69), image_pressed=None, image_hover=None, on_click=None):
+    def __init__(self, position, image_normal, size=(188, 69), image_pressed=None, image_hover=None, on_click=None,
+                 sound=None):
         self.position = position
         self.size = size
         self.image_normal = image_normal
@@ -21,6 +22,7 @@ class Button:
         self.image_pressed = image_pressed if image_pressed is not None else image_hover
         self.load_images()
         self.on_click = on_click
+        self.sound = sound
 
     def load_image(self, path):
         if path not in self.IMG_DICT:
@@ -43,6 +45,8 @@ class Button:
                 self.CUR_STATE = STATE_NORMAL
         elif event.type == pygame.MOUSEBUTTONDOWN:
             if self.collision_detect(point):
+                if self.sound is not None:
+                    self.sound.play()
                 self.CUR_STATE = STATE_CLICKED
                 if self.on_click is not None:
                     # 调用点击回调方法

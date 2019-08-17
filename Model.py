@@ -44,6 +44,10 @@ class ChessBoard:
     # 当前选中的棋子-初始无选中
     CURRENT_SELECTED_CHESSMAN = None
 
+    # 叫停按钮，初始不可以叫停
+    BLUE_STOP = False
+    RED_STOP = False
+
     def __init__(self):
         # 初始化棋盘
         self.__init_game_map__()
@@ -198,6 +202,8 @@ class ChessBoard:
         # 如果中间有棋子，判断最后一个棋子和选择位置是否只差1
         x_step = -1 if from_pos[0] > to_pos[0] else 1 if from_pos[0] < to_pos[0] else 0
         y_step = -1 if from_pos[1] > to_pos[1] else 1 if from_pos[1] < to_pos[1] else 0
+        if y_step == 0:
+            x_step *= 2
         last_chessman = center_chessman_list[-1]
         last_pos = last_chessman.get_row_col()
         if last_pos[0] + x_step == to_pos[0] and last_pos[1] + y_step == to_pos[1]:
@@ -232,6 +238,9 @@ class ChessBoard:
         self.CURRENT_SELECTED_CHESSMAN = None
         # 切换玩家
         self.CUR_PLAYER = self.PLAYER_RED if self.CUR_PLAYER == self.PLAYER_BLUE else self.PLAYER_BLUE
+
+        # 能否叫停
+        self.update_stop()
 
     # 点击了棋子
     def click_chessman(self, chessman):
@@ -290,3 +299,14 @@ class ChessBoard:
                 val = chessman.val * self.pos_val_dict[row_col]
                 score_result[self.PLAYER_RED] = score_result[self.PLAYER_RED] + val
         return score_result
+
+    # 是否展示叫停按钮
+    def update_stop(self):
+        chessman_list_blue = self.get_chessman_list(self.PLAYER_BLUE)
+        count = len(
+            list(filter(lambda x: x.get_row_col in self.pos_val_dict and x.get_row_col[1] >= 11, chessman_list_blue)))
+        self.BLUE_STOP = len(chessman_list_blue) == count
+        chessman_list_yellow = self.get_chessman_list(self.PLAYER_RED)
+        count = len(
+            list(filter(lambda x: x.get_row_col in self.pos_val_dict and x.get_row_col[1] <= 11, chessman_list_yellow)))
+        self.RED_STOP = len(chessman_list_yellow) == count
