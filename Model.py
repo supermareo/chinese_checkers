@@ -304,9 +304,12 @@ class ChessBoard:
     def update_stop(self):
         chessman_list_blue = self.get_chessman_list(self.PLAYER_BLUE)
         count = len(
-            list(filter(lambda x: x.get_row_col in self.pos_val_dict and x.get_row_col[1] >= 11, chessman_list_blue)))
+            list(
+                filter(lambda x: x.get_row_col() in self.pos_val_dict and x.get_row_col()[1] >= 11,
+                       chessman_list_blue)))
         self.BLUE_STOP = len(chessman_list_blue) == count
         chessman_list_yellow = self.get_chessman_list(self.PLAYER_RED)
         count = len(
-            list(filter(lambda x: x.get_row_col in self.pos_val_dict and x.get_row_col[1] <= 11, chessman_list_yellow)))
+            list(filter(lambda x: x.get_row_col() in self.pos_val_dict and x.get_row_col()[1] <= 3,
+                        chessman_list_yellow)))
         self.RED_STOP = len(chessman_list_yellow) == count

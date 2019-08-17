@@ -28,6 +28,7 @@ CLOCK = pygame.time.Clock()
 PAGE_WELCOME = 0
 PAGE_MODE = 1
 PAGE_GAME = 2
+PAGE_ABOUT = 3
 # 当前页
 CUR_PAGE = PAGE_WELCOME
 
@@ -46,6 +47,9 @@ PAGES_DATA = {
         "loaded": False
     },
     PAGE_GAME: {
+        "loaded": False
+    },
+    PAGE_ABOUT: {
         "loaded": False
     }
 }
@@ -93,6 +97,7 @@ DIALOG_MSG = "请输入一个合法的四则运算表达式，规则如下:\n" \
 EXPRESSION_PATTERN = re.compile('[0-9()+\\-\\*/ ]+')
 
 CHESSBOARD = None
+
 DIALOG_FLAG = False
 
 # 音效加载
@@ -131,6 +136,8 @@ def draw_page():
         draw_page_mode()
     elif CUR_PAGE == PAGE_GAME:
         draw_page_game()
+    elif CUR_PAGE == PAGE_ABOUT:
+        draw_page_about()
 
 
 # 共用方法
@@ -177,7 +184,11 @@ def end_click():
 
 # 点击关于按钮
 def about_click():
-    easygui.msgbox('Name:superychen\nEmail:superychen@gmail.com', '关于作者')
+    switch_page(PAGE_ABOUT)
+    # global DIALOG_FLAG
+    # DIALOG_FLAG = True
+    # easygui.msgbox('作者:\n\t张周阳 201702712004\n\t李吉言 201712712003', '关于作者')
+    # DIALOG_FLAG = False
 
 
 # 绘制欢迎页
@@ -197,6 +208,31 @@ def draw_page_welcome():
 
 
 # 欢迎页
+######################################################################################################################
+
+######################################################################################################################
+# 关于页
+def load_page_about_widgets():
+    background = load_image('ext/images/about.jpg', WINDOW)
+    buttons = []
+    PAGES_DATA[CUR_PAGE]['widgets'] = {
+        'background': background,
+        'buttons': buttons
+    }
+    PAGES_DATA[CUR_PAGE]['loaded'] = True
+
+
+def draw_page_about():
+    if not PAGES_DATA[CUR_PAGE]['loaded']:
+        load_page_about_widgets()
+    # 绘制界面
+    SCREEN.fill(COLOR_WHITE)
+    widgets = PAGES_DATA[CUR_PAGE]['widgets']
+    background = widgets['background']
+    SCREEN.blit(background, (0, 0))
+
+
+# 关于页
 ######################################################################################################################
 
 ######################################################################################################################
@@ -236,7 +272,10 @@ def standalone_click():
 
 # 点击网络模式
 def internet_click():
+    global DIALOG_FLAG
+    DIALOG_FLAG = True
     easygui.msgbox('暂不支持 网络模式', '提示')
+    DIALOG_FLAG = False
     # switch_page(PAGE_GAME)
     # global CUR_GAME_MODE
     # CUR_GAME_MODE = GAME_MODE_INTERNET
@@ -244,7 +283,10 @@ def internet_click():
 
 # 点击ai模式
 def ai_click():
+    global DIALOG_FLAG
+    DIALOG_FLAG = True
     easygui.msgbox('暂不支持 智能模式', '提示')
+    DIALOG_FLAG = False
     # switch_page(PAGE_GAME)
     # global CUR_GAME_MODE
     # CUR_GAME_MODE = GAME_MODE_AI
@@ -334,10 +376,10 @@ def show_calc_dialog(dest_val, components, error_msg=None):
     DIALOG_FLAG = True
     # 用户输入的表达式
     message = DIALOG_MSG.replace('_REPLACE_0_', str(components)).replace('_REPLACE_1_', str(dest_val))
-    DIALOG_FLAG = False
     if error_msg:
         message += '\n' + error_msg
     expression = easygui.enterbox(message, DIALOG_TITLE)
+    DIALOG_FLAG = False
     # 用户没输入，点了取消
     if expression is None:
         CHESSBOARD.CURRENT_SELECTED_CHESSMAN = None
@@ -463,12 +505,13 @@ def draw_game_board():
     draw_chessman_list(CHESSBOARD.get_chessman_list(CHESSBOARD.PLAYER_RED))
     # 绘制叫停按钮
     buttons = widgets['buttons']
-    if CHESSBOARD.BLUE_STOP:
-        if CHESSBOARD.CUR_PLAYER == CHESSBOARD.PLAYER_BLUE:
-            SCREEN.blit(buttons[0].get_cur_image(), buttons[0].position)
-    if CHESSBOARD.RED_STOP:
-        if CHESSBOARD.CUR_PLAYER == CHESSBOARD.PLAYER_RED:
-            SCREEN.blit(buttons[1].get_cur_image(), buttons[1].position)
+    CHESSBOARD.BLUE_STOP = True
+    CHESSBOARD.RED_STOP = True
+    # 可以叫停，且当前用户操作，才展示叫停按钮
+    if CHESSBOARD.BLUE_STOP and CHESSBOARD.CUR_PLAYER == CHESSBOARD.PLAYER_BLUE:
+        SCREEN.blit(buttons[0].get_cur_image(), buttons[0].position)
+    if CHESSBOARD.RED_STOP and CHESSBOARD.CUR_PLAYER == CHESSBOARD.PLAYER_RED:
+        SCREEN.blit(buttons[1].get_cur_image(), buttons[1].position)
 
 
 # 绘制界面提示文字
@@ -495,14 +538,14 @@ def load_page_game_widgets():
 
     background = load_image('ext/images/start_background_1.jpg', WINDOW)
     buttons = []
-    button_stop_blue = Button((20, 20), 'ext/images/stop_white.png',
+    button_stop_blue = Button((20, 20), 'ext/images/pause_white.png',
                               size=(int(DEFAULT_BUTTON_SIZE[0] / 2), int(DEFAULT_BUTTON_SIZE[1] / 2)),
-                              image_hover='ext/images/stop_red.png',
+                              image_hover='ext/images/pause_red.png',
                               on_click=stop_blue_click)
     buttons.append(button_stop_blue)
-    button_stop_yellow = Button((WINDOW[0] - 170, 20), 'ext/images/stop_white.png',
+    button_stop_yellow = Button((WINDOW[0] - 170, 20), 'ext/images/pause_white.png',
                                 size=(int(DEFAULT_BUTTON_SIZE[0] / 2), int(DEFAULT_BUTTON_SIZE[1] / 2)),
-                                image_hover='ext/images/stop_red.png',
+                                image_hover='ext/images/pause_red.png',
                                 on_click=stop_yellow_click)
     buttons.append(button_stop_yellow)
 
@@ -518,7 +561,12 @@ def stop_blue_click():
     score_blue = scores[CHESSBOARD.PLAYER_BLUE]
     score_yellow = scores[CHESSBOARD.PLAYER_RED]
     winner = '恭喜蓝方获得胜利' if score_blue > score_yellow else '恭喜黄方获得胜利' if score_yellow > score_blue else '本局和棋'
+    global DIALOG_FLAG
+    DIALOG_FLAG = True
     easygui.msgbox(f'蓝方得分:{score_blue}\n黄方得分:{score_yellow}\n{winner}', '游戏结束')
+    DIALOG_FLAG = False
+    del PAGES_DATA[CUR_PAGE]
+    PAGES_DATA[CUR_PAGE] = {'loaded': False}
     switch_page(PAGE_WELCOME)
 
 
@@ -527,7 +575,12 @@ def stop_yellow_click():
     score_blue = scores[CHESSBOARD.PLAYER_BLUE]
     score_yellow = scores[CHESSBOARD.PLAYER_RED]
     winner = '恭喜蓝方获得胜利' if score_blue > score_yellow else '恭喜黄方获得胜利' if score_yellow > score_blue else '本局和棋'
+    global DIALOG_FLAG
+    DIALOG_FLAG = True
     easygui.msgbox(f'蓝方得分:{score_blue}\n黄方得分:{score_yellow}\n{winner}', '游戏结束')
+    DIALOG_FLAG = False
+    del PAGES_DATA[CUR_PAGE]
+    PAGES_DATA[CUR_PAGE] = {'loaded': False}
     switch_page(PAGE_WELCOME)
 
 
@@ -549,13 +602,13 @@ def dispatcher_click(event, position):
             button.dispatcher_mouse_event(event, position)
     elif CUR_PAGE == PAGE_GAME:
         buttons = PAGES_DATA[CUR_PAGE]['widgets']['buttons']
-        if CHESSBOARD.BLUE_STOP:
-            if CHESSBOARD.CUR_PLAYER == CHESSBOARD.PLAYER_BLUE:
-                buttons[0].dispatcher_mouse_event(event, position)
-        if CHESSBOARD.RED_STOP:
-            if CHESSBOARD.CUR_PLAYER == CHESSBOARD.PLAYER_RED:
-                buttons[1].dispatcher_mouse_event(event, position)
+        if CHESSBOARD.BLUE_STOP and CHESSBOARD.CUR_PLAYER == CHESSBOARD.PLAYER_BLUE:
+            buttons[0].dispatcher_mouse_event(event, position)
+        if CHESSBOARD.RED_STOP and CHESSBOARD.CUR_PLAYER == CHESSBOARD.PLAYER_RED:
+            buttons[1].dispatcher_mouse_event(event, position)
         process_click(position)
+    elif CUR_PAGE == PAGE_ABOUT:
+        switch_page(PAGE_WELCOME)
 
 
 # 分发移动事件
@@ -584,6 +637,8 @@ if __name__ == '__main__':
             elif event.type == pygame.MOUSEMOTION:
                 dispatcher_move(event, mouse_pos)
 
-        draw_page()
+        if DIALOG_FLAG:
+            continue
 
+        draw_page()
         pygame.display.flip()
