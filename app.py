@@ -464,9 +464,11 @@ def draw_game_board():
     # 绘制叫停按钮
     buttons = widgets['buttons']
     if CHESSBOARD.BLUE_STOP:
-        SCREEN.blit(buttons[0].get_cur_image(), buttons[0].position)
+        if CHESSBOARD.CUR_PLAYER == CHESSBOARD.PLAYER_BLUE:
+            SCREEN.blit(buttons[0].get_cur_image(), buttons[0].position)
     if CHESSBOARD.RED_STOP:
-        SCREEN.blit(buttons[1].get_cur_image(), buttons[1].position)
+        if CHESSBOARD.CUR_PLAYER == CHESSBOARD.PLAYER_RED:
+            SCREEN.blit(buttons[1].get_cur_image(), buttons[1].position)
 
 
 # 绘制界面提示文字
@@ -548,9 +550,11 @@ def dispatcher_click(event, position):
     elif CUR_PAGE == PAGE_GAME:
         buttons = PAGES_DATA[CUR_PAGE]['widgets']['buttons']
         if CHESSBOARD.BLUE_STOP:
-            buttons[0].dispatcher_mouse_event(event, position)
+            if CHESSBOARD.CUR_PLAYER == CHESSBOARD.PLAYER_BLUE:
+                buttons[0].dispatcher_mouse_event(event, position)
         if CHESSBOARD.RED_STOP:
-            buttons[1].dispatcher_mouse_event(event, position)
+            if CHESSBOARD.CUR_PLAYER == CHESSBOARD.PLAYER_RED:
+                buttons[1].dispatcher_mouse_event(event, position)
         process_click(position)
 
 
